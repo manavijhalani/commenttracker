@@ -22,6 +22,8 @@ const App = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState({
     name: '',
+    email: '',
+    requesterEmail: '',
     type: 'comment',
     message: '',
     hasImageIssue: false,
@@ -53,37 +55,24 @@ const App = () => {
     }
   };
 
-  const getemailsfromurl = () => {
-    const params = new URLSearchParams(window.location.search);
-    return {
-      sender_email: params.get('sender'),
-      receiver_email: params.get('receiver'),
-    };
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newComment.name || !newComment.message) {
+    if (!newComment.name || !newComment.message || !newComment.email || !newComment.requesterEmail) {
       setNotification({ message: 'Please fill in all required fields', severity: 'error' });
-      return;
-    }
-
-    const { sender_email, receiver_email } = getemailsfromurl();
-    if (!sender_email || !receiver_email) {
-      setNotification({ message: 'Missing email information from URL', severity: 'error' });
       return;
     }
 
     if (editingId) {
       setNotification({ message: 'You cannot edit comments', severity: 'warning' });
+      setEditingId(false);
     } else {
       const timestamp = new Date().toISOString();
       const { data, error } = await supabase
         .from('comments')
         .insert([
           {
-            blog_writer_email: sender_email,
-            commenter_email: receiver_email,
+            blog_writer_email: newComment.requesterEmail,
+            commenter_email: newComment.email,
             comment: newComment.message,
             name_commenter: newComment.name,
             type: newComment.type,
@@ -93,7 +82,7 @@ const App = () => {
         ])
         .select();
 
-      if (error) {
+      if (error||!data) {
         console.error('Supabase insert error:', error.message);
         setNotification({ message: `Error: ${error.message}`, severity: 'error' });
       } else {
@@ -103,6 +92,8 @@ const App = () => {
 
     setNewComment({
       name: '',
+      email: '',
+      requesterEmail: '',
       type: 'comment',
       message: '',
       hasImageIssue: false,
@@ -110,14 +101,6 @@ const App = () => {
       timestamp: '',
     });
     setTimeout(() => setNotification({ message: '', severity: 'success' }), 3000);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this comment?')) {
-      setComments(comments.filter((comment) => comment.id !== id));
-      setNotification({ message: 'Comment deleted!', severity: 'success' });
-      setTimeout(() => setNotification({ message: '', severity: 'success' }), 3000);
-    }
   };
 
   return (
@@ -141,6 +124,24 @@ const App = () => {
               value={newComment.name}
               onChange={(e) =>
                 setNewComment({ ...newComment, name: e.target.value })
+              }
+            />
+
+            <TextField
+              fullWidth
+              label="Your Email"
+              value={newComment.email}
+              onChange={(e) =>
+                setNewComment({ ...newComment, email: e.target.value })
+              }
+            />
+
+            <TextField
+              fullWidth
+              label="Requester Email"
+              value={newComment.requesterEmail}
+              onChange={(e) =>
+                setNewComment({ ...newComment, requesterEmail: e.target.value })
               }
             />
 
