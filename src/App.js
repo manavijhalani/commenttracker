@@ -61,6 +61,8 @@ const App = () => {
       setNotification({ message: 'Please fill in all required fields', severity: 'error' });
       return;
     }
+    console.log('Supabase URL:', process.env.REACT_APP_SUPA_URL);
+console.log('Supabase Key:', process.env.REACT_APP_SUPA_API);
 
     if (editingId) {
       setNotification({ message: 'You cannot edit comments', severity: 'warning' });
