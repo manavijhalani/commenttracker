@@ -5,6 +5,7 @@ const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   headers: {
-    apikey: supabaseAnonKey
+    apikey: supabaseAnonKey, // Explicitly include the API key
+    Authorization: `Bearer ${supabaseAnonKey}`,
   },
 });
